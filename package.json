@@ -1,0 +1,7 @@
+{
+  "name": "my-node",
+  "dependencies": {
+    "request": "^2.83.0",
+    "websocket": "latest"
+  }
+}
