@@ -63,7 +63,7 @@ wsServer = new WebSocketServer({
 
         sendNoty('Client disconnected ' + connection.remoteAddress);
 
-        connectionTimer.stop();
+        clearInterval(connectionTimer);
     });
 });
 
