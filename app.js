@@ -22,56 +22,60 @@ wsServer = new WebSocketServer({
 }).on('request', function (request) {
     // Accept connection
     var connection = request.accept(null, request.origin);
+    var lastResponseTime = new Date().getTime();
+
     connections.push(connection);
 
-    console.log((new Date()) + ' Connection accepted. IP: ' + request.remoteAddress);
-    sendNoty('Connection connected ' + request.remoteAddress);
+    // Logging
+    console.log((new Date()) + ' Connected. IP: ' + request.remoteAddress);
+    sendNoty('New Connection. IP: ' + request.remoteAddress);
 
-    var lastMsgTime = new Date().getTime();
-
+    // Start ping timer
     var connectionTimer = setInterval(function () {
-        var diffTime = new Date().getTime() - lastMsgTime;
+        var diffTime = new Date().getTime() - lastResponseTime;
 
         if (diffTime > 600000) {
-            sendNoty('Device has not replied for 10 minutes ' + connection.remoteAddress);
-            connection.close();
+            console.log((new Date()) + ' Connection has not replied for ' + diffTime + ' ms. IP: ' + connection.remoteAddress);
+            sendNoty('Connection has not replied for ' + diffTime + ' ms. IP: ' + connection.remoteAddress);
         }
 
         connection.sendUTF(JSON.stringify({
-            type: "checking"
+            type: "ping"
         }));
-    }, 300000);
 
-    // Events
-    connection.on('message', function () {
-        lastMsgTime = new Date().getTime();
+        console.log((new Date()) + ' Sent ping for IP: ' + connection.remoteAddress);
+    }, 290000);
+
+    // Bind Events
+    connection.on('message', function (message) {
+        console.log((new Date()) + ' Message "' + message.utf8Data + '" from IP: ' + request.remoteAddress);
+
+        lastResponseTime = new Date().getTime();
+
+        console.log(lastResponseTime);
     });
 
     connection.on('close', function () {
-        console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
+        console.log((new Date()) + ' Connection closed. IP: ' + connection.remoteAddress);
+        sendNoty('Connection closed. IP: ' + connection.remoteAddress);
 
+        // Remove from array
         var index = connections.indexOf(connection);
 
         if (index !== -1) {
             connections.splice(index, 1);
         }
 
-        sendAll(JSON.stringify({
-            type: "disconnected",
-            ip: connection.remoteAddress
-        }));
-
-        sendNoty('Client disconnected ' + connection.remoteAddress);
-
+        // Stop ping timer
         clearInterval(connectionTimer);
     });
 });
 
-function sendAll(data) {
-    connections.forEach(function (destination) {
-        destination.sendUTF(data);
-    });
-}
+// function sendAll(data) {
+//     connections.forEach(function (destination) {
+//         destination.sendUTF(data);
+//     });
+// }
 
 function sendNoty(text, callback) {
     var headers = {
