@@ -34,7 +34,7 @@ wsServer = new WebSocketServer({
     var connectionTimer = setInterval(function () {
         var diffTime = new Date().getTime() - lastResponseTime;
 
-        if (diffTime > 600000) {
+        if (diffTime > config.ws.max_no_response_time_minutes * 60000) {
             console.log((new Date()) + ' Connection has not replied for ' + diffTime + ' ms. IP: ' + connection.remoteAddress);
             sendNoty('Connection has not replied for ' + diffTime + ' ms. IP: ' + connection.remoteAddress);
         }
@@ -44,7 +44,7 @@ wsServer = new WebSocketServer({
         }));
 
         console.log((new Date()) + ' Sent ping for IP: ' + connection.remoteAddress);
-    }, 290000);
+    }, config.ws.ping_interval_minutes * 60000);
 
     // Bind Events
     connection.on('message', function (message) {
