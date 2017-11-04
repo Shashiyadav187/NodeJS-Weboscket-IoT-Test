@@ -12,7 +12,7 @@ var server = http.createServer(function (request, response) {
 server.listen(8080, function () {
     console.log((new Date()) + ' Server is listening on port 8080');
 
-    sendNoty('Server started');
+    sendNotification('Server started');
 });
 
 var connections = [];
@@ -28,7 +28,7 @@ wsServer = new WebSocketServer({
 
     // Logging
     console.log((new Date()) + ' Connected. IP: ' + request.remoteAddress);
-    sendNoty('New Connection. IP: ' + request.remoteAddress);
+    sendNotification('New Connection. IP: ' + request.remoteAddress);
 
     // Start ping timer
     var connectionTimer = setInterval(function () {
@@ -36,7 +36,7 @@ wsServer = new WebSocketServer({
 
         if (diffTime > config.ws.max_no_response_time_minutes * 60000) {
             console.log((new Date()) + ' Connection has not replied for ' + diffTime + ' ms. IP: ' + connection.remoteAddress);
-            sendNoty('Connection has not replied for ' + diffTime + ' ms. IP: ' + connection.remoteAddress);
+            sendNotification('Connection has not replied for ' + diffTime + ' ms. IP: ' + connection.remoteAddress);
         }
 
         connection.sendUTF(JSON.stringify({
@@ -57,7 +57,7 @@ wsServer = new WebSocketServer({
 
     connection.on('close', function () {
         console.log((new Date()) + ' Connection closed. IP: ' + connection.remoteAddress);
-        sendNoty('Connection closed. IP: ' + connection.remoteAddress);
+        sendNotification('Connection closed. IP: ' + connection.remoteAddress);
 
         // Remove from array
         var index = connections.indexOf(connection);
@@ -77,7 +77,7 @@ wsServer = new WebSocketServer({
 //     });
 // }
 
-function sendNoty(text, callback) {
+function sendNotification(text, callback) {
     var headers = {
         'User-Agent': 'Super Agent/0.0.1',
         'Content-Type': 'application/x-www-form-urlencoded'
